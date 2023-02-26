@@ -21,7 +21,6 @@
   "author": "d.kul",
   "license": "ISC",
   "dependencies": {
-    "@vk-io/authorization": "^1.4.0",
     "@vk-io/hear": "^1.1.0",
     "form-data": "^4.0.0",
     "vk-io": "^4.8.1",

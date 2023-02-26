@@ -1,7 +1,6 @@
-const { VK, API, Upload, CallbackService } = require('vk-io');
+const { VK, API } = require('vk-io');
 const { HearManager } = require('@vk-io/hear');
 const { QuestionManager } = require('vk-io-question');
-const { DirectAuthorization, officialAppCredentials } = require('@vk-io/authorization');
 const FormData = require('form-data');
 const https = require('https'); 
 const fs = require('fs');
@@ -89,18 +88,21 @@ function filePostRequest(file_url, file_name, upload_url){
 
 const config = require('./config.json');
 
-const requiredConfigOptions = [
-    'responsesFile',
-    'logRequests',
-    'filterSources',
-    'filterLinks',
-];
+const defaultConfigOptions = {
+    logRequests: true,
+    filterSources: true,
+    filterLinks: true,
+};
 
-for (o of requiredConfigOptions) {
+for (key of Object.keys(defaultConfigOptions)) {
     if (typeof config[o] === 'undefined') {
-        console.error('missing config option: ' + o);
-        process.exit(1);
+        config[key] = defaultConfigOptions[key];
     }
+}
+
+if (typeof config.responsesFile === 'undefined') {
+    console.error('missing config option: responsesFile');
+    process.exit(1);
 }
 
 const botResponses = require('./' + config.responsesFile);
@@ -123,11 +125,9 @@ for (o of requiredBotResponses) {
 }
 
 const requiredEnvVariables = [
-    'DGROUP_ID',
     'GROUP_ID',
     'TOKEN',
     'UTOKEN',
-    'WHITELIST',
 ];
 
 for (o of requiredEnvVariables) {
@@ -137,12 +137,18 @@ for (o of requiredEnvVariables) {
     }
 }
 
+if (config.filterSources && process.env['WHITELIST'] === 'undefined') {
+    console.error('missing env variable: WHITELIST');
+    process.exit(1);
+}
+
 const triggerRegex = new RegExp(botResponses.triggerWord, 'i');
 console.log(triggerRegex);
 const linkRegex = /(?<=wall)(-?[0-9]*)_([0-9]*)(?:\?reply=([0-9]*))?/;
 const linkSpamRegex = /(?:(http)s?:\/\/)?(?:[\w-]+\.)?[\w-]+(\.[\w-]+)(?:\/| |$)/g;
 
-const communityIdWhitelist = process.env.WHITELIST.split(",");
+
+const communityIdWhitelist = (config.filterSources ? process.env.WHITELIST.split(",") : []);
 for (let i = 0; i < communityIdWhitelist.length; i++)
     communityIdWhitelist[i] = parseInt(communityIdWhitelist[i]);
 const groupId = parseInt(process.env.GROUP_ID);
