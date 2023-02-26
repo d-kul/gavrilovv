@@ -95,7 +95,7 @@ const defaultConfigOptions = {
 };
 
 for (key of Object.keys(defaultConfigOptions)) {
-    if (typeof config[o] === 'undefined') {
+    if (typeof config[key] === 'undefined') {
         config[key] = defaultConfigOptions[key];
     }
 }
@@ -143,7 +143,6 @@ if (config.filterSources && process.env['WHITELIST'] === 'undefined') {
 }
 
 const triggerRegex = new RegExp(botResponses.triggerWord, 'i');
-console.log(triggerRegex);
 const linkRegex = /(?<=wall)(-?[0-9]*)_([0-9]*)(?:\?reply=([0-9]*))?/;
 const linkSpamRegex = /(?:(http)s?:\/\/)?(?:[\w-]+\.)?[\w-]+(\.[\w-]+)(?:\/| |$)/g;
 
@@ -262,7 +261,7 @@ hearManager.hear(triggerRegex, async (context) => {
                 else if (msgAttch.type === 'doc'){
                     // upload doc
                     const docServer = await vk.api.docs.getWallUploadServer({
-                        group_id: process.env.DGROUP_ID
+                        group_id: process.env.GROUP_ID
                     });
                     // make POST request with file
                     const preq = await filePostRequest(msgAttch.url, msgAttch.title, docServer.upload_url);
