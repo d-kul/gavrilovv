@@ -1,0 +1,6 @@
+{
+    "responsesFile": "responses_ru.json",
+    "logRequests": true,
+    "filterSources": true,
+    "filterLinks": true
+}

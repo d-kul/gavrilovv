@@ -1,0 +1,9 @@
+{
+    "triggerWord": "post",
+    "getDestination": "Message destination:",
+    "postNotFound": "Post not found",
+    "invalidDestination": "Invalid destination",
+    "getMessage": "Your message:",
+    "messageSent": "Message sent",
+    "scriptError": "/!\\ Something is creating script errors"
+}

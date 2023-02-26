@@ -1,0 +1,9 @@
+{
+    "triggerWord": "пост",
+    "getDestination": "Куда отправить?",
+    "postNotFound": "Не нашёл пост...",
+    "invalidDestination": "Тебе не стоит туда постить...",
+    "getMessage": "Ваш комментарий:",
+    "messageSent": "Отправлено.",
+    "scriptError": "/!\\ Что-то создаёт скриптовые ошибки"
+}
