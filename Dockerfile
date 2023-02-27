@@ -5,5 +5,4 @@ WORKDIR ./
 COPY . .
 RUN npm i
 CMD ["npm", "start"]
-ENV NODE_ENV=prod
 EXPOSE 3000
