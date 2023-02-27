@@ -324,6 +324,7 @@ if (process.env.NODE_ENV === 'prod') {
     console.log(`Starting webhook on port ${port}`);
     vk.updates.start({
         webhook: {
+            port: port,
             path: '/bot'
         }
     });
