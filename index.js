@@ -86,6 +86,8 @@ const userUpload = new Upload({
 const questionManager = new QuestionManager();
 const hearManager = new HearManager();
 
+// rudimental change
+
 vk.updates.use(questionManager.middleware);
 vk.updates.on('message', hearManager.middleware);
 
