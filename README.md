@@ -1,5 +1,5 @@
 # gavrilovv
-Чат-бот ВКонтакте для отправки анонимных комментариев. Также является пакетом npm.
+Чат-бот ВКонтакте на node.js для отправки анонимных комментариев. Также является пакетом npm.
 
 Доступ к API проводится через модуль [vk-io](https://github.com/negezor/vk-io) с использованием [vk-io-question](https://github.com/fakemancat/vk-io-question), [@vk-io/hear](https://github.com/negezor/vk-io/blob/master/packages/hear), [form-data](https://github.com/form-data/form-data).
 
@@ -40,6 +40,5 @@ GROUP_ID  - ID группы, от лица которой отправляютс
 TOKEN     - Токен сообщества от API ВК. Требуются права на доступ к сообщениям сообщества и документам.
 UTOKEN    - Токен пользователя от API ВК. Требуются права на доступ к фотографиям.
 WHITELIST - Список сообществ, куда допускается отправлять сообщения. Не требуется если свойство filterSources равно false.
+NODE_ENV  - Хост будет проходить через webhook, если эта переменная будет равна 'prod', в другом случае через long polling.
 ```
-
-

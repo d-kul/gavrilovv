@@ -87,6 +87,7 @@ function filePostRequest(file_url, file_name, upload_url){
 }
 
 const config = require('./config.json');
+const { group } = require('console');
 
 const defaultConfigOptions = {
     logRequests: true,
@@ -245,18 +246,23 @@ hearManager.hear(triggerRegex, async (context) => {
                 else if (msgAttch.type === 'photo'){
                     // upload photo
                     const photoServer = await uapi.photos.getWallUploadServer({
-                        group_id: process.env.GROUP_ID
+                        group_id: groupId
                     });
+                    console.log(msgAttch);
 
                     // make POST request with file
                     const preq = await photoPostRequest(msgAttch.mediumSizeUrl, photoServer.upload_url);
+                    console.log(preq);
+
                     const photo = await uapi.photos.saveWallPhoto({
-                        group_id: process.env.GROUP_ID,
+                        group_id: groupId,
                         server: preq.server,
                         photo: preq.photo,
                         hash: preq.hash
                     });
-                    messageRequest.attachments += `photo${photo[0].owner_id}_${photo[0].id},`;
+                    console.log(photo);
+
+                    messageRequest.attachments += `photo${photo[0].owner_id}_${photo[0].id}_${photo[0].access_key},`;
                 }
                 else if (msgAttch.type === 'doc'){
                     // upload doc
@@ -313,4 +319,14 @@ hearManager.hear(triggerRegex, async (context) => {
 });
 
 console.log('Bot started.');
-vk.updates.startPolling();
+const port = process.env.PORT || 3000;
+if (process.env.NODE_ENV === 'prod') {
+    vk.updates.start({
+        webhook: {
+            port: port,
+            path: '/bot'
+        }
+    });
+} else {
+    vk.updates.startPolling();
+}
