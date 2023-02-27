@@ -321,10 +321,9 @@ hearManager.hear(triggerRegex, async (context) => {
 console.log('Bot started.');
 const port = process.env.PORT || 3000;
 if (process.env.NODE_ENV === 'prod') {
-    console.log('Starting webhook');
+    console.log(`Starting webhook on port ${port}`);
     vk.updates.start({
         webhook: {
-            port: port,
             path: '/bot'
         }
     });
