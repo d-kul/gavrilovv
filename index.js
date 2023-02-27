@@ -1,93 +1,8 @@
-const { VK, API } = require('vk-io');
+const { VK, API, Upload } = require('vk-io');
 const { HearManager } = require('@vk-io/hear');
 const { QuestionManager } = require('vk-io-question');
-const FormData = require('form-data');
-const https = require('https'); 
-const fs = require('fs');
-
-function photoPostRequest(photo_url, upload_url){
-	return new Promise((resolve, reject) => {
-		const photo_name = `./photo${Math.floor(Math.random()*1000000)}.jpg`;
-
-		const write_st = fs.createWriteStream(photo_name);
-
-		write_st.on('close', function() {
-			// then upload photo
-			const read_st = fs.createReadStream(photo_name);
-			const form = new FormData();
-			form.append('photo', read_st);
-			const req = https.request(upload_url, {
-				method: 'POST',
-				headers: form.getHeaders()
-			}, res => {
-				let body = []
-				res.on('data', (chunk) => body.push(chunk))
-				res.on('end', () => {
-					try {
-						body = JSON.parse(Buffer.concat(body).toString());
-					} catch(e) {
-						reject(e);
-					} 
-                    fs.unlinkSync(photo_name);
-					resolve(body);
-				})
-			});
-			form.pipe(req);
-			req.on('error', (e) => {
-				reject(e.message);
-			});
-		});
-
-		// get photo
-		https.get(photo_url, res => {
-			res.pipe(write_st);
-		}); 
-	});
-}
-
-function filePostRequest(file_url, file_name, upload_url){
-	return new Promise((resolve, reject) => {
-		const write_st = fs.createWriteStream(file_name);
-
-		write_st.on('close', function() {
-			// then upload photo
-			const read_st = fs.createReadStream(file_name);
-			const form = new FormData();
-			form.append('file', read_st);
-			const req = https.request(upload_url, {
-				method: 'POST',
-				headers: form.getHeaders()
-			}, res => {
-				let body = []
-				res.on('data', (chunk) => body.push(chunk))
-				res.on('end', () => {
-					try {
-						body = JSON.parse(Buffer.concat(body).toString());
-					} catch(e) {
-						reject(e);
-					} 
-                    fs.unlinkSync(file_name);
-					resolve(body);
-				})
-			});
-			form.pipe(req);
-			req.on('error', (e) => {
-				reject(e.message);
-			});
-		});
-
-		// get file
-		https.get(file_url, res => {
-            // get location in headers
-            https.get(res.headers.location, r => {
-			    r.pipe(write_st);
-            });
-		}); 
-	});
-}
 
 const config = require('./config.json');
-const { group } = require('console');
 
 const defaultConfigOptions = {
     logRequests: true,
@@ -147,7 +62,6 @@ const triggerRegex = new RegExp(botResponses.triggerWord, 'i');
 const linkRegex = /(?<=wall)(-?[0-9]*)_([0-9]*)(?:\?reply=([0-9]*))?/;
 const linkSpamRegex = /(?:(http)s?:\/\/)?(?:[\w-]+\.)?[\w-]+(\.[\w-]+)(?:\/| |$)/g;
 
-
 const communityIdWhitelist = (config.filterSources ? process.env.WHITELIST.split(",") : []);
 for (let i = 0; i < communityIdWhitelist.length; i++)
     communityIdWhitelist[i] = parseInt(communityIdWhitelist[i]);
@@ -158,8 +72,14 @@ const vk = new VK({
     pollingGroupId: process.env.GROUP_ID
 });
 
-const uapi = new API({
-    token: process.env.UTOKEN
+const groupUpload = new Upload({
+    api: vk.api
+});
+
+const userUpload = new Upload({
+	api: new API({
+        token: process.env.UTOKEN
+    })
 });
 
 const questionManager = new QuestionManager();
@@ -169,6 +89,7 @@ vk.updates.use(questionManager.middleware);
 vk.updates.on('message', hearManager.middleware);
 
 hearManager.hear(triggerRegex, async (context) => {
+    
     if (context.senderId === -groupId) {
         return;
     }
@@ -244,37 +165,22 @@ hearManager.hear(triggerRegex, async (context) => {
                 else if (msgAttch.type === 'video')
                     messageRequest.attachments += `video${msgAttch.ownerId}_${msgAttch.id},`;
                 else if (msgAttch.type === 'photo'){
-                    // upload photo
-                    const photoServer = await uapi.photos.getWallUploadServer({
-                        group_id: groupId
-                    });
-                    console.log(msgAttch);
-
-                    // make POST request with file
-                    const preq = await photoPostRequest(msgAttch.mediumSizeUrl, photoServer.upload_url);
-                    console.log(preq);
-
-                    const photo = await uapi.photos.saveWallPhoto({
+                    const attch = await userUpload.wallPhoto({
                         group_id: groupId,
-                        server: preq.server,
-                        photo: preq.photo,
-                        hash: preq.hash
+                        source: {
+                            value: msgAttch.mediumSizeUrl
+                        }
                     });
-                    console.log(photo);
-
-                    messageRequest.attachments += `photo${photo[0].owner_id}_${photo[0].id}_${photo[0].access_key},`;
+                    messageRequest.attachments += attch+',';
                 }
                 else if (msgAttch.type === 'doc'){
-                    // upload doc
-                    const docServer = await vk.api.docs.getWallUploadServer({
-                        group_id: process.env.GROUP_ID
+                    const attch = await groupUpload.wallDocument({
+                        group_id: groupId,
+                        source: {
+                            value: msgAttch.url
+                        }
                     });
-                    // make POST request with file
-                    const preq = await filePostRequest(msgAttch.url, msgAttch.title, docServer.upload_url);
-                    const doc = await vk.api.docs.save({
-                        file: preq.file
-                    });
-                    messageRequest.attachments += `doc${doc.doc.owner_id}_${doc.doc.id},`;
+                    messageRequest.attachments += attch+`,`;
                 }
                 else if (msgAttch.type === 'sticker')
                     messageRequest.sticker_id = msgAttch.id;
