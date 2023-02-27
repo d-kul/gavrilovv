@@ -231,7 +231,7 @@ if (process.env.NODE_ENV === 'prod') {
     vk.updates.start({
         webhook: {
             port: port,
-            path: '/bot'
+            webhookConfirmation: process.env.CONFIRMATION
         }
     });
 } else {
