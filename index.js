@@ -69,7 +69,8 @@ const groupId = parseInt(process.env.GROUP_ID);
 
 const vk = new VK({
     token: process.env.TOKEN,
-    pollingGroupId: process.env.GROUP_ID
+    pollingGroupId: process.env.GROUP_ID,
+    webhookConfirmation: process.env.CONFIRMATION
 });
 
 const groupUpload = new Upload({
@@ -227,10 +228,9 @@ hearManager.hear(triggerRegex, async (context) => {
 console.log('Bot started.');
 const port = process.env.PORT || 3000;
 if (process.env.NODE_ENV === 'prod') {
-    vk.updates.options.webhookConfirmation = process.env.CONFIRMATION;
     vk.updates.start({
         webhook: {
-            port: port,
+            port: port
         }
     });
 } else {
