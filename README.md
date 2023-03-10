@@ -1,5 +1,7 @@
 # gavrilovv
-Чат-бот ВКонтакте на node.js для отправки анонимных комментариев. Также является пакетом npm.
+Чат-бот ВКонтакте на node.js для отправки анонимных комментариев. Также является пакетом npm. 
+
+[Исходный код](./index.js)
 
 Доступ к API проводится через модуль [vk-io](https://github.com/negezor/vk-io) с использованием [vk-io-question](https://github.com/fakemancat/vk-io-question), [@vk-io/hear](https://github.com/negezor/vk-io/blob/master/packages/hear).
 
